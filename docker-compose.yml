@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  # --- EVOLUTION API V1 ---
+  evolution-api:
+    container_name: evolution_api
+    image: atendai/evolution-api:v1.8.2 # Versão v1 estável
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - evolution_store:/evolution/store
+      - evolution_instances:/evolution/instances
+    command: ["node", "./dist/src/main.js"]
+    networks:
+      - zen_network
+
+  # --- MONGODB (Recomendado na doc para persistência) ---
+  mongo:
+    container_name: evolution_mongo
+    image: mongo:latest
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - zen_network
+
+  # --- REDIS (Recomendado na doc para cache/performance) ---
+  redis:
+    container_name: evolution_redis
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - zen_network
+
+volumes:
+  evolution_store:
+  evolution_instances:
+  mongo_data:
+  redis_data:
+
+networks:
+  zen_network:
+    driver: bridge
